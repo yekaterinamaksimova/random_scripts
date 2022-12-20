@@ -108,6 +108,33 @@ def solve_linear_Gauss_Seidel(
         print("LHS matrix is not positive semi-definite, redefine.")
         return -1
 
+def PCG(
+    LHS: np.ndarray,
+    RHS: np.ndarray,
+    x0: np.ndarray,
+    tol: float=10**(-3),
+) -> np.ndarray:
+
+    assert LHS.shape[0]==LHS.shape[1]
+    assert (RHS.shape==(LHS.shape[1],1)) or (RHS.shape==(LHS.shape[1],))
+    P = LHS.shape[0]
+    if np.all(np.linalg.eigvals(LHS) >= 0):
+        x = np.copy(x0)
+        r = RHS - LHS @ x
+        p = np.copy(r)
+        rsold = r.T @ r 
+        for i in range(P):
+            Ap = LHS @ p 
+            alpha = rsold / (p.T @ Ap)
+            x += alpha * p 
+            r -= alpha * Ap
+            rsnew = r.T @ r 
+            if np.sqrt(rsnew) < tol:
+                break
+            p = r + (rsnew/ rsold) * p 
+            rsold= np.copy(rsnew)
+    return x
+
 def standartize_X(X: np.ndarray) -> np.ndarray:
     """Standartizes the genotype matrix X: Xj = (Gj-muj)/sigma_j for each snp j. 
         If var(Gj)==0 then Xj=0. """
